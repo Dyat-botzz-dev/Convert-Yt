@@ -1,15 +1,25 @@
-const formConvert = document.getElementById('form-convert');
-const fileMp4 = document.getElementById('file-mp4');
-const btnConvert = document.getElementById('btn-convert');
-const result = document.getElementById('result');
+const urlInput = document.getElementById('url');
+const convertButton = document.getElementById('convert');
+const resultDiv = document.getElementById('result');
 
-formConvert.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const file = fileMp4.files[0];
-  const reader = new FileReader();
-  reader.onload = () => {
-    const link = reader.result;
-    result.innerHTML = `<a href="${link}" target="_blank">Link MP4</a>`;
-  };
-  reader.readAsDataURL(file);
+convertButton.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    if (!url) return;
+
+    try {
+        const response = await fetch(`https://yt-mp3-api.herokuapp.com/api/v1/convert?url=${url}`);
+        const data = await response.json();
+        const mp3Url = data.link;
+
+        resultDiv.innerHTML = `
+            <a href="${mp3Url}" download="${getVideoTitle(url)}.mp3">Download MP3</a>
+        `;
+    } catch (error) {
+        resultDiv.innerHTML = 'Error: ' + error.message;
+    }
 });
+
+function getVideoTitle(url) {
+    const videoId = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))((\w|-){11})/)[1];
+    return `YouTube Video - ${videoId}`;
+}
